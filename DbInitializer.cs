@@ -21,6 +21,24 @@
             my.Skills.Add(sk);
             my.Skills.Add(sk2);
 
+            var pers2 = new Person
+            {
+                Name = "Виталий",
+                DisplayName = "HR",
+                Skills = new List<Skill>
+                {
+                    new Skill
+                    {
+                        Name = "sk3",
+                        Level = 5
+                    },
+                    new Skill
+                    {
+                        Name = "sk4",
+                        Level = 6
+                    }
+                }
+            };
 
             var pers = new Person
             {
@@ -39,10 +57,10 @@
                         Level = 4
                     }
                 }
-                
             };
 
             my.Persons.Add(pers);
+            my.Persons.Add(pers2);
             my.SaveChanges();
         }
     }

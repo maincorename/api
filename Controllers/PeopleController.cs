@@ -12,7 +12,7 @@ namespace api.Controllers
     using Microsoft.EntityFrameworkCore;
 
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/v1/persons")]
     public class PeopleController : Controller
     {
         private readonly MyContext _context;
@@ -28,16 +28,17 @@ namespace api.Controllers
         /// <param name="id"> Id сотрудника. </param>
         /// <returns>True - удалился, false - не удалился.</returns>
         [HttpDelete("{id}")]
-        public bool Delete(Guid id)
+        public IActionResult Delete(long id)
         {
-            var person = _context.Persons.Find(id);
+            var person = _context.Persons.Include(p => p.Skills)
+                                         .FirstAsync(p => p.Id.Equals(id));
             if (person != null)
             {
                 _context.Remove(person);
                 _context.SaveChanges();
-                return true;
+                return Ok(StatusCode(200));
             }
-            else return false;
+            else return BadRequest();
         }
 
         /// <summary>
@@ -47,7 +48,7 @@ namespace api.Controllers
         [HttpGet]
         public List<Person> Get()
         {
-            var persons = _context.Persons;
+            var persons = _context.Persons.Include(p => p.Skills);
             return persons.ToList();
         }
 
@@ -55,19 +56,22 @@ namespace api.Controllers
         /// Получить сотрудника по Id.
         /// </summary>
         /// <param name="id"> Id сотрудника. </param>
-        /// <returns> Найденный сотрудник. </returns>
+        /// <returns> Найденный сотрудник </returns>
         [HttpGet("{id}")]
-        public IActionResult Get(Guid id)
+        public async Task<ActionResult<Person>> Get(long id)
         {
-            var persons = _context.Persons.Find(id);
-            return Ok(persons);
+            var person = await _context.Persons.Include(p => p.Skills)
+                                               .FirstAsync(p => p.Id.Equals(id));
+            if (person == null)
+                return BadRequest(StatusCode(400));
+            return new ObjectResult(person);
         }
 
         /// <summary>
         /// Добавить сотрудника в базу.
         /// </summary>
         /// <param name="person">Сотрудник.</param>
-        /// <returns>200 - добавился, 404 - не добавился.</returns>
+        /// <returns>201 - добавился, 400 - не добавился.</returns>
         [HttpPost]
         public IActionResult Post(Person person)
         {
@@ -75,9 +79,9 @@ namespace api.Controllers
             {
                 _context.Persons.Add(person);
                 _context.SaveChanges();
-                return Ok();
+                return Ok(StatusCode(201));
             } 
-            else return NotFound();
+            else return NotFound(StatusCode(400));
         }
 
         // PUT api/<PeopleController>/5
@@ -91,7 +95,7 @@ namespace api.Controllers
 
             _context.Update(currentPerson);
             _context.SaveChanges();
-            return Ok();
+            return Ok(StatusCode(201));
         }
     }
 }
