@@ -26,17 +26,17 @@ namespace api.Controllers
         /// Удалить сотрудника по Id.
         /// </summary>
         /// <param name="id"> Id сотрудника. </param>
-        /// <returns>True - удалился, false - не удалился.</returns>
+        /// <returns>200 - удалился, 400 - не удалился.</returns>
         [HttpDelete("{id}")]
-        public IActionResult Delete(long id)
+        public async Task<ActionResult> Delete(long id)
         {
-            var person = _context.Persons.Include(p => p.Skills)
-                                         .FirstAsync(p => p.Id.Equals(id));
+            var person = await _context.Persons.Include(p => p.Skills)
+                                               .FirstAsync(p => p.Id.Equals(id));
             if (person != null)
             {
                 _context.Remove(person);
                 _context.SaveChanges();
-                return Ok(StatusCode(200));
+                return Ok();
             }
             else return BadRequest();
         }
@@ -46,24 +46,25 @@ namespace api.Controllers
         /// </summary>
         /// <returns> Список сотрудников. </returns>
         [HttpGet]
-        public List<Person> Get()
+        public async Task<ActionResult<List<Person>>> Get()
         {
-            var persons = _context.Persons.Include(p => p.Skills);
-            return persons.ToList();
+            var persons = await _context.Persons.Include(p => p.Skills)
+                                                .ToListAsync();
+            return new ObjectResult(persons);
         }
 
         /// <summary>
         /// Получить сотрудника по Id.
         /// </summary>
         /// <param name="id"> Id сотрудника. </param>
-        /// <returns> Найденный сотрудник </returns>
+        /// <returns> Найденный сотрудник. </returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<Person>> Get(long id)
         {
             var person = await _context.Persons.Include(p => p.Skills)
                                                .FirstAsync(p => p.Id.Equals(id));
             if (person == null)
-                return BadRequest(StatusCode(400));
+                return BadRequest();
             return new ObjectResult(person);
         }
 
@@ -73,29 +74,39 @@ namespace api.Controllers
         /// <param name="person">Сотрудник.</param>
         /// <returns>201 - добавился, 400 - не добавился.</returns>
         [HttpPost]
-        public IActionResult Post(Person person)
+        public async Task<ActionResult> Post(Person person)
         {
             if (person != null)
             {
                 _context.Persons.Add(person);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return Ok(StatusCode(201));
             } 
-            else return NotFound(StatusCode(400));
+            else return BadRequest();
         }
 
-        // PUT api/<PeopleController>/5
+        /// <summary>
+        /// Изменить сотрудника в базе.
+        /// </summary>
+        /// <param name="id"> Id сотрудника. </param>
+        /// <param name="person"> Сотрудник. </param>
+        /// <returns>201 - добавился, 400 - не изменился.</returns>
         [HttpPut("{id}")]
-        public IActionResult Put(Guid id, Person person)
+        public async Task<ActionResult> Put(long id, Person person)
         {
-            var currentPerson = _context.Persons.Find(id);
-            currentPerson.DisplayName = person.DisplayName;
-            currentPerson.Name = person.Name;
-            currentPerson.Skills = person.Skills;
+            var currentPerson = await _context.Persons.FindAsync(id);
+            if (currentPerson != null)
+            {
+                currentPerson.DisplayName = person.DisplayName;
+                currentPerson.Name = person.Name;
+                currentPerson.Skills = person.Skills;
 
-            _context.Update(currentPerson);
-            _context.SaveChanges();
-            return Ok(StatusCode(201));
+                _context.Update(currentPerson);
+                await _context.SaveChangesAsync();
+                return Ok(StatusCode(201));
+            }
+            else return BadRequest();
+            
         }
     }
 }
