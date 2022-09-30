@@ -35,7 +35,7 @@ namespace api.Controllers
             if (person != null)
             {
                 _context.Remove(person);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return Ok();
             }
             else return BadRequest();
