@@ -94,7 +94,9 @@ namespace api.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> Put(long id, Person person)
         {
-            var currentPerson = await _context.Persons.FindAsync(id);
+            var currentPerson = await _context.Persons
+                                              .Include(p => p.Skills)
+                                              .FirstAsync(p => p.Id.Equals(id));
             if (currentPerson != null)
             {
                 currentPerson.DisplayName = person.DisplayName;
