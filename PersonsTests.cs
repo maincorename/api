@@ -31,9 +31,25 @@ namespace ApiTests
             optionsBuilder.UseSqlServer(ConnectionString);
             
             _myContext = new MyContext(optionsBuilder.Options);
-            
         }
 
+        /// <summary>
+        /// Тест получения сотрудников.
+        /// </summary>
+        [Test]
+        public async void PersonGetTest()
+        {
+            //Arrange
+            PeopleController peopleController = new PeopleController(_myContext);
+            
+            //Act
+            var result = await peopleController.Get();
+            var resultId = await peopleController.Get(1);
+
+            //Assert
+            Assert.NotNull(result);
+            Assert.NotNull(resultId);
+        }
 
         /// <summary>
         /// Тест добавления сотрудника.
@@ -65,10 +81,10 @@ namespace ApiTests
 
             //Act
             var result = peopleController.Post(pers);
-            var eq = new OkObjectResult(200);
+            var eq = new OkObjectResult(200).ToString();
 
             //Assert
-            Assert.AreEqual(result.Result, eq);
+            Assert.AreEqual(result.Result.ToString(), eq);
         }
 
         /// <summary>
@@ -83,10 +99,10 @@ namespace ApiTests
 
             //Act
             var result = peopleController.Delete(idTest);
-            var eq = new OkResult();
+            var eq = new OkResult().ToString();
 
             //Assert
-            Assert.AreEqual(result.Result, eq);
+            Assert.AreEqual(result.Result.ToString(), eq);
         }
 
         /// <summary>
@@ -96,7 +112,7 @@ namespace ApiTests
         public void PersonUpdateTest()
         {
             //Arrange
-            var idTest = 2;
+            var idTest = 1;
             PeopleController peopleController = new PeopleController(_myContext);
 
             var person = new Person
@@ -120,10 +136,10 @@ namespace ApiTests
 
             //Act
             var result = peopleController.Put(idTest, person);
-            var eq = new OkObjectResult(200);
+            var eq = new OkObjectResult(200).ToString();
 
             //Assert
-            Assert.AreEqual(result.Result, eq);
+            Assert.AreEqual(result.Result.ToString(), eq);
         }
     }
 }
