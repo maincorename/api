@@ -2,15 +2,17 @@
 
 namespace api.Controllers
 {
-    using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading.Tasks;
+
     using api.Entities;
 
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
 
+    /// <summary>
+    /// Контроллер сотрудников.
+    /// </summary>
     [ApiController]
     [Route("api/v1/persons")]
     public class PeopleController : Controller
@@ -27,18 +29,17 @@ namespace api.Controllers
         /// </summary>
         /// <param name="id"> Id сотрудника. </param>
         /// <returns>200 - удалился, 400 - не удалился.</returns>
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:long}")]
         public async Task<ActionResult> Delete(long id)
         {
             var person = await _context.Persons.Include(p => p.Skills)
                                                .FirstAsync(p => p.Id.Equals(id));
-            if (person != null)
-            {
-                _context.Remove(person);
-                await _context.SaveChangesAsync();
-                return Ok();
-            }
-            else return BadRequest();
+            if (person == null)
+                return BadRequest();
+
+            _context.Remove(person);
+            await _context.SaveChangesAsync();
+            return Ok();
         }
 
         /// <summary>
@@ -58,13 +59,14 @@ namespace api.Controllers
         /// </summary>
         /// <param name="id"> Id сотрудника. </param>
         /// <returns> Найденный сотрудник. </returns>
-        [HttpGet("{id}")]
+        [HttpGet("{id:long}")]
         public async Task<ActionResult<Person>> Get(long id)
         {
             var person = await _context.Persons.Include(p => p.Skills)
                                                .FirstAsync(p => p.Id.Equals(id));
             if (person == null)
                 return BadRequest();
+
             return new ObjectResult(person);
         }
 
@@ -76,13 +78,12 @@ namespace api.Controllers
         [HttpPost]
         public async Task<ActionResult> Post(Person person)
         {
-            if (person != null)
-            {
-                _context.Persons.Add(person);
-                await _context.SaveChangesAsync();
-                return Ok(StatusCode(201));
-            } 
-            else return BadRequest();
+            if (person == null)
+                return BadRequest();
+            
+            _context.Persons.Add(person);
+            await _context.SaveChangesAsync();
+            return Ok(StatusCode(201));
         }
 
         /// <summary>
@@ -91,24 +92,22 @@ namespace api.Controllers
         /// <param name="id"> Id сотрудника. </param>
         /// <param name="person"> Сотрудник. </param>
         /// <returns>201 - добавился, 400 - не изменился.</returns>
-        [HttpPut("{id}")]
+        [HttpPut("{id:long}")]
         public async Task<ActionResult> Put(long id, Person person)
         {
             var currentPerson = await _context.Persons
                                               .Include(p => p.Skills)
                                               .FirstAsync(p => p.Id.Equals(id));
-            if (currentPerson != null)
-            {
-                currentPerson.DisplayName = person.DisplayName;
-                currentPerson.Name = person.Name;
-                currentPerson.Skills = person.Skills;
+            if (currentPerson == null)
+                return BadRequest();
 
-                _context.Update(currentPerson);
-                await _context.SaveChangesAsync();
-                return Ok(StatusCode(201));
-            }
-            else return BadRequest();
-            
+            currentPerson.DisplayName = person.DisplayName;
+            currentPerson.Name = person.Name;
+            currentPerson.Skills = person.Skills;
+
+            _context.Update(currentPerson);
+            await _context.SaveChangesAsync();
+            return Ok(StatusCode(201));
         }
     }
 }

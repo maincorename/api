@@ -12,15 +12,9 @@
         /// <summary>
         /// Инициализировать записи в бд.
         /// </summary>
-        /// <param name="my"></param>
+        /// <param name="my"> Контекст. </param>
         public static void Initialize(MyContext my)
         {
-            var sk = new Skill { Name = "Красноречие", Level = 5};
-            var sk2 = new Skill { Name = "Крутизна", Level = 7 };
-            my.Skills.Add(new Skill { Name = "Усердие", Level = 9 });
-            my.Skills.Add(sk);
-            my.Skills.Add(sk2);
-
             var pers2 = new Person
             {
                 Name = "Виталий",
